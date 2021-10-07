@@ -24,19 +24,19 @@ end
 #include <stdio.h>
 using namespace std;
 vector<string> split(string str){ // Split a string by spaces
-    string word = "";
-    vector<string> ans;
-    for (auto x : str){
-        if (x == ' '){
+	string word = "";
+	vector<string> ans;
+	for (auto x : str){
+		if (x == ' '){
 			ans.push_back(word);
-            word = "";
-        }
-        else{
-            word = word + x;
-        }
-    }
-    ans.push_back(word);
-    return ans;
+			word = "";
+		}
+		else{
+			word = word + x;
+		}
+	}
+	ans.push_back(word);
+	return ans;
 }
 
 int deduce(string s){
@@ -133,7 +133,7 @@ int main(){
 		int x,val;
 		cin >> x >> val;
 		assert(val != -1);
-		if(type.find(x) == type.end() || type[x] == 0){
+		if(type.find(x) == type.end() || type[x] != 0){
 			cerr << x << " is not a valid input node" << endl;
 			exit(0);
 		}
