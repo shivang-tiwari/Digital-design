@@ -199,7 +199,7 @@ void input_netlist(){
 		}
 	}
 }
-void input_fault(){
+void input_fault(){ // Format is <fault_location><space><fault_type>
 	fault.resize(node_count+1,-1);
 	cin >> fault_location >> fault_type;
 	if(fault_type != 0 && fault_type != 1){
@@ -230,7 +230,7 @@ void levelize(){ // Levelises the circuit and stores the order in the 'order' ve
 	});
 	
 }
-void find_output(){
+void find_output(){ // Simulates the circuit in level order
 	for(int i : order){
 		if(graph[i].empty())continue;
 		int ans;
