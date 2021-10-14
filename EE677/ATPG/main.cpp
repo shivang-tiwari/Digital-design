@@ -2,7 +2,6 @@
 /*
 EE 677 - ATPG
 Name - Shivang Tiwari
-Roll number - 190040112
 Language - C++17
 Netlist format - 
 ----------------------------------------------------------------------------------------------
@@ -94,7 +93,7 @@ bool isCyclic(vector<vector<int>> &adj){
 	}
 	return false;
 }
-//------------------------------Functions--------------------------------------------------//
+//------------------------------Initialising--------------------------------------------------//
 void init(){ // Initialise the program
 	node_count = 0;
 	ots.clear();
