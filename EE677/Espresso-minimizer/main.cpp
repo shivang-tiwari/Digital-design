@@ -1,7 +1,9 @@
 /*
-// हर हर महादेव
 EE 677 - Heuristic based logic minimizer
-Shivang Tiwari - 190040112
+
+Team members - 
+	1) Shivang Tiwari - 190040112
+	2) Prakhar Mittal - 190070046
 Language - C++17
 Input format - 
 ----------------------------------------------------------------------------------------------
@@ -168,26 +170,32 @@ class logic_cover{
 	void expand(){ // Expand operator of Espresso
 		while(true){
 			sortOnSet();
-			int m = on[0].size();
-			vector<int> impl = on[0]; // Implicant which we are going to expand
-			for(int j = 0; j < m; j++){
-				if(impl[j] == 1)continue; // Already one, Can't expand
-				impl[j] = 1;
-				if(checkIntersection(impl,off)){ // If it intersects with OFF set then cannot expand
-					impl[j] = 0;
+			auto old_set = on;
+			int n = on.size(),m = on[0].size();
+			for(int i = 0; i < n; i++){
+				vector<int> impl = on[i]; // Implicant which we are going to expand
+				for(int j = 0; j < m; j++){
+					if(impl[j] == 1)continue; // Already one, Can't expand
+					impl[j] = 1;
+					if(checkIntersection(impl,off)){ // If it intersects with OFF set then cannot expand
+						impl[j] = 0;
+					}
 				}
-			}
-			vector<vector<int>> new_vec = {impl};
-			for(vector<int> &v : on){
-				if(!checkContainment(v,impl)){
-					new_vec.push_back(v);
+				vector<vector<int>> new_vec = {impl};
+				for(vector<int> &v : on){
+					if(!checkContainment(v,impl)){
+						new_vec.push_back(v);
+					}
 				}
+				if(on == new_vec)continue; // Nothing to expand
+				on = new_vec;
+				break;
 			}
-			if(on == new_vec)break; // Nothing to expand
-			on = new_vec;
+			sort(on.begin(),on.end());
+			sort(old_set.begin(),old_set.end());
+			if(on == old_set)return; // No expansion happened
 		}
 	}
-	
 	
 	void irredundant(){
 		vector<vector<int>> new_vec;
@@ -286,7 +294,7 @@ class logic_cover{
 			irredundant();
 			pair<int,int> new_cost = computeCost();
 			if(new_cost >= old_cost){
-				on = old_set;
+				//on = old_set;
 				return;
 			}
 		}
@@ -304,7 +312,6 @@ class logic_cover{
 		}
 		cout << "-------------------------------------------------------" << endl;
 	}
-	
 };
 
 //------------------------------Main Program--------------------------------------------------//
