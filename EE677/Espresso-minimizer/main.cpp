@@ -1,9 +1,5 @@
 /*
 EE 677 - Heuristic based logic minimizer
-
-Team members - 
-	1) Shivang Tiwari - 190040112
-	2) Prakhar Mittal - 190070046
 Language - C++17
 Input format - 
 ----------------------------------------------------------------------------------------------
@@ -76,7 +72,6 @@ class logic_cover{
 			}
 		}
 		ans.second = cnt;
-		
 		return ans;
 	}
 	
@@ -149,12 +144,12 @@ class logic_cover{
 		iota(order.begin(),order.end(),0);
 		for(int j = 0; j < m; j++){
 			for(int i = 0; i < n; i++){
-				col[j] += on[i][j];
+				col[j] += on[i][j]; // col[j] stores the sum of the column
 			}
 		}
 		for(int i = 0; i < n; i++){
 			for(int j = 0; j < m; j++){
-				wt[i] += on[i][j] * col[j];
+				wt[i] += on[i][j] * col[j]; // Taking dot product with the set itself
 			}
 		}
 		sort(order.begin(),order.end(),[&](const auto &v1,const auto &v2){
@@ -174,20 +169,24 @@ class logic_cover{
 			int n = on.size(),m = on[0].size();
 			for(int i = 0; i < n; i++){
 				vector<int> impl = on[i]; // Implicant which we are going to expand
+				bool expanded = false; // Indicator variable
 				for(int j = 0; j < m; j++){
 					if(impl[j] == 1)continue; // Already one, Can't expand
 					impl[j] = 1;
 					if(checkIntersection(impl,off)){ // If it intersects with OFF set then cannot expand
 						impl[j] = 0;
 					}
+					else{
+						expanded = true;
+					}
 				}
+				if(!expanded)continue;
 				vector<vector<int>> new_vec = {impl};
 				for(vector<int> &v : on){
 					if(!checkContainment(v,impl)){
 						new_vec.push_back(v);
 					}
 				}
-				if(on == new_vec)continue; // Nothing to expand
 				on = new_vec;
 				break;
 			}
@@ -251,7 +250,7 @@ class logic_cover{
 					}
 					if(!essential){
 						on[i][k+1] = 0;
-						return; // Reduction successful
+						continue; // Reduction successful
 					}
 				}
 				{
@@ -275,7 +274,7 @@ class logic_cover{
 					}
 					if(!essential){
 						on[i][k] = 0;
-						return; // Reduction successful
+						continue; // Reduction successful
 					}
 				}
 			}
@@ -285,7 +284,6 @@ class logic_cover{
 	void espresso(){ // Main espresso function
 		expand();
 		irredundant();
-		reduce();
 		while(true){
 			pair<int,int> old_cost = computeCost();
 			auto old_set = on;
@@ -294,7 +292,7 @@ class logic_cover{
 			irredundant();
 			pair<int,int> new_cost = computeCost();
 			if(new_cost >= old_cost){
-				//on = old_set;
+				on = old_set;
 				return;
 			}
 		}
