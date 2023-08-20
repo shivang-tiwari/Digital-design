@@ -1,0 +1,11 @@
+Run 
+
+	make SW
+
+to produce aa2c executable testbench_sw
+
+
+Run
+	make HW
+
+to produce testbench_hw and ahir_system_test_bench

@@ -1,0 +1,23 @@
+
+$module [divider]
+	$in (a: $float<8,23>)
+	$out (b: $float<8,23>) $is
+{
+	$branchblock[loop] {
+		$merge $entry loopback
+			$phi counter := $zero<4> $on $entry next_counter $on loopback
+			$phi res := ($bitcast ($float<8,23>) (_b01111111000000000000000000000000 - ($bitcast ($uint<32>) a))) $on $entry next_res $on loopback
+		$endmerge
+		
+		next_res := (res * (_f2.0e+0 - (a * res)))
+		next_counter := (counter + 1)
+
+		continue_flag := (counter < 8)
+		$if continue_flag $then
+		    $place[loopback]
+	    $endif
+
+	}  (res => res)
+	b := res
+}
+

@@ -1,0 +1,114 @@
+$pipe input_data: $float<8,23>
+$pipe output_data: $float<8,23>
+
+$storage A: $array[20][20] $of $float<8,23>
+$storage B: $array[20] $of $float<8,23>
+
+$constant eps: $float<8,23> := _f1.000e-5
+$constant N: $uint<8> := 16
+
+
+$module [divider]
+	$in (a: $float<8,23>)
+	$out (b: $float<8,23>) $is
+{
+	$branchblock[loop] {
+		$merge $entry loopback
+			$phi counter := $zero<4> $on $entry next_counter $on loopback
+			$phi res := ($bitcast ($float<8,23>) (_b01111111000000000000000000000000 - ($bitcast ($uint<32>) a))) $on $entry next_res $on loopback
+		$endmerge
+		
+		next_res := (res * (_f2.0e+0 - (a * res)))
+		next_counter := (counter + 1)
+
+		continue_flag := (counter < 8)
+		$if continue_flag $then
+		    $place[loopback]
+	    $endif
+
+	}  (res => res)
+	b := res
+}
+
+
+$module [run_test] $in () $out () $is
+{
+	$branchblock[BB] {
+		$merge $entry outer_loopback 
+			$phi col := $zero<8> $on $entry ncol $on outer_loopback
+			$phi row := $zero<8> $on $entry nrow $on outer_loopback
+		$endmerge 
+		
+		ncol := (col + 1)
+		nrow := (row + 1)
+		
+		$call divider (A[row][col]) (reci)
+		
+		$merge $entry inner_loopback 
+			$phi I := $zero<8> $on $entry nI $on inner_loopback
+		$endmerge
+			fac := (A[I][col] * reci)
+			
+			$merge $entry inner2_loopback 
+				$phi J := col $on $entry nJ $on inner2_loopback
+			$endmerge
+			
+			A[I][J] := ($mux (I == row) A[I][J] (A[I][J] - (A[row][J] * fac)))
+			
+			nJ := (J + 1)
+			$if (nJ < N) $then $place [inner2_loopback] $endif
+		nI := (I + 1)
+		$if (nI < N) $then $place [inner_loopback] $endif
+		
+		$if (ncol < N) $then $place [outer_loopback] $endif
+	}
+	$branchblock[BB2] {
+		$merge $entry inner3_loopback
+			$phi K := $zero<8> $on $entry nK $on inner3_loopback
+		$endmerge
+		
+			$call divider (A[K][K]) (recipr)
+			B[K] := (A[K][N] * recipr)
+			nK := (K + 1)
+		$if (nK < N) $then $place [inner3_loopback] $endif
+	}
+}
+
+
+$module [ping_daemon] $in () $out () $is
+{
+	$branchblock[loop] {
+		$merge $entry loopback $endmerge
+			
+			$merge $entry outer_loopback 
+				$phi I := $zero<8> $on $entry nI $on outer_loopback
+			$endmerge
+			
+			$merge $entry inner_loopback 
+				$phi J := $zero<8> $on $entry nJ $on inner_loopback
+			$endmerge
+			
+			A[I][J] := input_data
+			
+			nJ := (J + 1)
+			$if (nJ <= N) $then $place [inner_loopback] $endif
+			nI := (I + 1)
+			
+			$if (nI < N) $then $place [outer_loopback] $endif
+			
+			$call run_test () ()
+			
+			$merge $entry output_loopback 
+				$phi K := $zero<8> $on $entry nK $on output_loopback
+			$endmerge
+			
+			output_data := B[K]
+			
+			nK := (K + 1)
+			
+			$if (nK < N) $then $place [output_loopback] $endif
+			
+			
+		$place [loopback]
+	}
+}
